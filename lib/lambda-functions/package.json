@@ -1,6 +1,6 @@
 {
   "name": "aws-sso-extensions-for-enterprise-layer",
-  "version": "3.1.5",
+  "version": "3.2.0",
   "description": "AWS SSO Permissions Utility Layer",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

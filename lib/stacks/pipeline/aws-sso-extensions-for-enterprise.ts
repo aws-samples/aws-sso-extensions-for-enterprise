@@ -2,19 +2,20 @@
 Main pipeline stack i.e. entry point of the application
 */
 
-import { Repository } from "aws-cdk-lib/aws-codecommit";
 import { Stack, StackProps, Tags } from "aws-cdk-lib";
-import { Construct } from "constructs";
+import { Repository } from "aws-cdk-lib/aws-codecommit";
 import {
   CodePipeline,
   CodePipelineSource,
   ShellStep,
 } from "aws-cdk-lib/pipelines";
+import { Construct } from "constructs";
 import { BuildConfig } from "../../build/buildConfig";
 import {
   OrgArtefactsDeploymentStage,
   SolutionArtefactsDeploymentStage,
   SSOArtefactsDeploymentStage,
+  SSOArtefactsPostDeployment,
 } from "./pipeline-stages";
 
 function fullname(buildConfig: BuildConfig, name: string): string {
@@ -109,5 +110,24 @@ export class AwsSsoExtensionsForEnterprise extends Stack {
     );
 
     pipeline.addStage(deploySolutionArtefacts);
+
+    const deploySSOArtefactsPostDeployment = new SSOArtefactsPostDeployment(
+      this,
+      fullname(buildConfig, "deploySSOArtefactsPostDeployment"),
+      {
+        env: {
+          account: buildConfig.PipelineSettings.SSOServiceAccountId,
+          region: buildConfig.PipelineSettings.SSOServiceAccountRegion,
+        },
+      },
+      buildConfig
+    );
+    Tags.of(deploySSOArtefactsPostDeployment).add("App", buildConfig.App);
+    Tags.of(deploySSOArtefactsPostDeployment).add(
+      "Environment",
+      buildConfig.Environment
+    );
+
+    pipeline.addStage(deploySSOArtefactsPostDeployment);
   }
 }

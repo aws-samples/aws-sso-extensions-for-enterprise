@@ -19,6 +19,7 @@
 - [Using API interface for your use cases](#using-api-interface-for-your-use-cases)
 - [Using S3 interface for your use cases](#using-s3-interface-for-your-use-cases)
 - [Unicorn Rides use cases](https://catalog.workshops.aws/ssoextensions/en-US/03-usecases)
+- [Nightly Run](#using-nightly-run-and-remediation-feature)
 - [AWS SSO Region Switch](docs/documentation//Region-Switch.md)
 - [Troubleshooting](docs/documentation/TroubleShooting.md)
 - [Security](#security)
@@ -332,6 +333,19 @@ If you chose to use `S3` interface for managing your permission sets and account
 - For permission set operations, uploading a new file to the S3 prefix path would map to creating a permission set, uploading a new copy of the file would map to updating the permission set, and deleting the file would map to deleting the permission set
 
 - Ensure your deployment account has a cloudtrail. If not, the solution will not be able to provision permission sets when moving in and out of OUs as these events will not register with the event bus.
+
+## Using nightly run and remediation feature
+
+If you chose to enable the nightly run feature, i.e. set `EnableNightlyRun` to `true`, then read below for information and usage instructions:
+
+- The nightly run feature will run daily at 23:00. This will determine any deviations between permission set/account assignments within AWS SSO configuration and those found in the solution (Dynamo DB tables).
+- The deviations are in two categories: 1) Unknown account assignments/permission sets. This is where a change has been made outside of the solution to create a new permission set/assignment and is therefore unknown to the solution. 2) Changed permission sets (i.e. changes to attached policies, session duration tags)
+- Any deviations found will either be auto remediated or a user will be notified.
+
+- Set `NightlyRunRemediationMode` to `AUTOREMEDIATE` to delete unknown (additional) account assignments/permissions sets, and to update changed permission sets.
+- Set `NightlyRunRemediationMode` to `NOTIFY` to be notified about any unknown account assignments/permissions sets, and changed permission sets. Notifications will be sent to the email that is subscribed to the SNS topic, i.e. the email set in `NotificationEmail`.
+
+- _Note: This feature currently looks at changes/new entities being present. This does not yet determine if account assignments/permission sets are missing._
 
 ## Security
 

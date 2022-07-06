@@ -338,36 +338,7 @@
                 "Next": "ListTagsForResource with NextToken"
               }
             ],
-            "Default": "Fetch Permission Set"
-          },
-          "Fetch Permission Set": {
-            "Type": "Task",
-            "Resource": "arn:aws:states:::dynamodb:getItem",
-            "Parameters": {
-              "TableName.$": "$.ps-tableName",
-              "Key": {
-                "psArn": {
-                  "S.$": "$.permissionSetArn"
-                }
-              }
-            },
-            "Next": "Publish to PS import handling topic",
-            "ResultPath": "$.fetchPermissionSetResult",
-            "Retry": [
-              {
-                "ErrorEquals": ["States.TaskFailed"],
-                "BackoffRate": 1.5,
-                "IntervalSeconds": 2,
-                "MaxAttempts": 2
-              }
-            ],
-            "Catch": [
-              {
-                "ErrorEquals": ["States.ALL"],
-                "Next": "Catchall for error handling",
-                "ResultPath": "$.solutionError"
-              }
-            ]
+            "Default": "ListAccountsForProvisionedPermissionSet"
           },
           "ListTagsForResource with NextToken": {
             "Type": "Task",
@@ -379,60 +350,6 @@
             "Resource": "arn:aws:states:::aws-sdk:ssoadmin:listTagsForResource",
             "ResultPath": "$.listTagsForResource",
             "Next": "Process through tag Values",
-            "Retry": [
-              {
-                "ErrorEquals": ["States.TaskFailed"],
-                "BackoffRate": 1.5,
-                "IntervalSeconds": 2,
-                "MaxAttempts": 2
-              }
-            ],
-            "Catch": [
-              {
-                "ErrorEquals": ["States.ALL"],
-                "Next": "Catchall for error handling",
-                "ResultPath": "$.solutionError"
-              }
-            ]
-          },
-          "Publish to PS import handling topic": {
-            "Type": "Task",
-            "Resource": "arn:aws:states:::sns:publish",
-            "Parameters": {
-              "TopicArn.$": "$.topicArn",
-              "Message.$": "$"
-            },
-            "Next": "Delete Permission Set",
-            "Retry": [
-              {
-                "ErrorEquals": ["States.TaskFailed"],
-                "BackoffRate": 1.5,
-                "IntervalSeconds": 2,
-                "MaxAttempts": 2
-              }
-            ],
-            "ResultPath": null,
-            "Catch": [
-              {
-                "ErrorEquals": ["States.ALL"],
-                "Next": "Catchall for error handling",
-                "ResultPath": "$.solutionError"
-              }
-            ]
-          },
-          "Delete Permission Set": {
-            "Type": "Task",
-            "Resource": "arn:aws:states:::dynamodb:deleteItem",
-            "Parameters": {
-              "TableName.$": "$.ps-tableName",
-              "Key": {
-                "psArn": {
-                  "S.$": "$.permissionSetArn"
-                }
-              }
-            },
-            "Next": "ListAccountsForProvisionedPermissionSet",
-            "ResultPath": null,
             "Retry": [
               {
                 "ErrorEquals": ["States.TaskFailed"],
@@ -548,7 +465,90 @@
                 "Next": "Wait for Identity Store Throttle"
               }
             ],
-            "Default": "Pass through"
+            "Default": "Fetch Permission Set"
+          },
+          "Fetch Permission Set": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::dynamodb:getItem",
+            "Parameters": {
+              "TableName.$": "$.ps-tableName",
+              "Key": {
+                "psArn": {
+                  "S.$": "$.permissionSetArn"
+                }
+              }
+            },
+            "Next": "Publish to PS import handling topic",
+            "ResultPath": "$.fetchPermissionSetResult",
+            "Retry": [
+              {
+                "ErrorEquals": ["States.TaskFailed"],
+                "BackoffRate": 1.5,
+                "IntervalSeconds": 2,
+                "MaxAttempts": 2
+              }
+            ],
+            "Catch": [
+              {
+                "ErrorEquals": ["States.ALL"],
+                "Next": "Catchall for error handling",
+                "ResultPath": "$.solutionError"
+              }
+            ]
+          },
+          "Publish to PS import handling topic": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::sns:publish",
+            "Parameters": {
+              "TopicArn.$": "$.topicArn",
+              "Message.$": "$"
+            },
+            "Next": "Delete Permission Set",
+            "Retry": [
+              {
+                "ErrorEquals": ["States.TaskFailed"],
+                "BackoffRate": 1.5,
+                "IntervalSeconds": 2,
+                "MaxAttempts": 2
+              }
+            ],
+            "ResultPath": null,
+            "Catch": [
+              {
+                "ErrorEquals": ["States.ALL"],
+                "Next": "Catchall for error handling",
+                "ResultPath": "$.solutionError"
+              }
+            ]
+          },
+          "Delete Permission Set": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::dynamodb:deleteItem",
+            "Parameters": {
+              "TableName.$": "$.ps-tableName",
+              "Key": {
+                "psArn": {
+                  "S.$": "$.permissionSetArn"
+                }
+              }
+            },
+            "Next": "Pass through",
+            "ResultPath": null,
+            "Retry": [
+              {
+                "ErrorEquals": ["States.TaskFailed"],
+                "BackoffRate": 1.5,
+                "IntervalSeconds": 2,
+                "MaxAttempts": 2
+              }
+            ],
+            "Catch": [
+              {
+                "ErrorEquals": ["States.ALL"],
+                "Next": "Catchall for error handling",
+                "ResultPath": "$.solutionError"
+              }
+            ]
           },
           "Wait for Identity Store Throttle": {
             "Type": "Wait",
